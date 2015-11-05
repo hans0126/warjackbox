@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="c"></div>
+    <div>
+        <button onclick='gb("disabled")'>Disabled</button>
+        <button onclick='gb("enabled")'>Enabled</button>
+    </div>
+    <div>
+        <button onclick='gb("C")'>C</button>
+        <button onclick='gb("L")'>L</button>
+        <button onclick='gb("M")'>M</button>
+        <button onclick='gb("R")'>R</button>
+        <button onclick='gb("G")'>G</button>
+        <button onclick='gb("I")'>I</button>
+    </div>
+    <div>
+        <button onclick='resetTb()'>Reset</button>
+        <label for="mirror">
+            <input type="checkbox" id='mirror' onchange="changeMode(this)" /> mirror mode
+        </label>
+    </div>
+    <div>
+        <textarea id="inputCode" cols="30" rows="10"></textarea>
+    </div>
+    <div>
+        <button onclick='getData()'>get data</button>
+    </div>
+    <script src="js/lib/pixi.js/bin/pixi.min.js"></script>
+    <script src="js/lib/stats.js-master/build/stats.min.js"></script>
+    <script src="js/warjack_box.js"></script>
+    <script>
+    var loader = PIXI.loader;
+
+    loader.add("source/satellite.fnt");
+    loader.add("source/crackhouse.fnt");
+    loader.add("source/templar.fnt");
+    // loader.once('complete', onAssetsLoaded);
+
+    loader.load();
+
+    var inputCode = document.getElementById('inputCode');
+    var wj = new warjackBox();
+
+
+
+    wj.init();
+
+    function gb(b) {
+        wj.getBrush(b);
+    }
+
+    function resetTb() {
+        wj.resetTable();
+    }
+
+    function changeMode(element) {
+        wj.mirrorMode = element.checked;
+    }
+
+    function getData(){
+        var _data = wj.getDataArray();
+        inputCode.value = _data.join("\n");
+    }
+    </script>
+</body>
+
+</html>
