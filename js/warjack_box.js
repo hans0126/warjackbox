@@ -8,6 +8,7 @@
      _self.resetTable = resetTable;
      _self.mirrorMode = false;
      _self.getDataArray = getDataArray;
+     _self.transferAndRender = transferAndRender;
 
      var stage = new PIXI.Container(),
          table = new PIXI.Container();
@@ -21,6 +22,8 @@
 
      var brushType = null;
 
+
+
      _self.init = function() {
          editAreaRenderer = new PIXI.autoDetectRenderer(360, 360);
          document.getElementById("c").appendChild(editAreaRenderer.view);
@@ -28,10 +31,16 @@
          table.interactive = true;
          table.x = 20;
          table.y = 20;
+         
+         
 
-         table.on('mousedown', penDown);
-         table.on('mousemove', painting);
-         table.on('mouseup', penUp);
+
+         table.mousedown = penDown;
+         table.mousemove = painting;
+         table.mouseup = penUp;
+
+
+
 
          for (var i = 0; i < 6; i++) {
              for (var j = 0; j < 6; j++) {
@@ -66,7 +75,6 @@
                  graphic.drawRect(0, 0, cubeWidth, cubeHeight);
                  graphic.endFill();
 
-
                  cube.addChild(graphic);
                  cube.addChild(txt);
 
@@ -75,41 +83,36 @@
          }
 
          stage.addChild(table);
-         anime();
+
+         table.hitArea = new PIXI.Rectangle(0, 0, table.width, table.height);
+
+         editAreaRenderer.render(stage);
      }
 
      function penDown(event) {
 
          if (!brushType) return
 
-         this.data = event.data;
+         anime();
          this.dragging = true;
-         this.sx = this.data.getLocalPosition(this).x * this.scale.x;
-         this.sy = this.data.getLocalPosition(this).y * this.scale.y;
-         painProcess(this.sx, this.sy);
+         var newPosition = event.data.getLocalPosition(this);
+         painProcess(newPosition.x, newPosition.y);
+
      }
 
-     function painting() {
+     function painting(event) {
          if (this.dragging) {
-             var newPosition = this.data.getLocalPosition(this);
-
+             var newPosition = event.data.getLocalPosition(this);
              painProcess(newPosition.x, newPosition.y);
 
-             if (newPosition.x < table.x ||
-                 newPosition.x > table.x + table.width ||
-                 newPosition.y < table.y ||
-                 newPosition.y > table.y + table.width) {
 
-                 this.data = null;
-                 this.dragging = false;
-             }
          }
      }
 
      function penUp() {
-         this.data = null;
          this.dragging = false;
-        
+         console.log("A");
+         window.cancelRequestAnimFrame(animeRequest);
      }
 
      function painProcess(px, py) {
@@ -156,59 +159,59 @@
                      }
                  }
 
-                 if (_targetCube.blockType != brushType.bType ||
-                     _targetCube.blockContent != brushType.font) {
 
-                     if (brushType.bType == 'disabled') {
 
-                         _targetCube.getChildAt(0).tint = 0x666666;
-                         _targetCube.getChildAt(1).visible = false;
+                 if (brushType.bType == 'disabled') {
+
+                     _targetCube.getChildAt(0).tint = 0x666666;
+                     _targetCube.getChildAt(1).visible = false;
+
+                     if (_self.mirrorMode) {
+                         _mirrorCube.getChildAt(0).tint = 0x666666
+                         _mirrorCube.getChildAt(1).visible = false
+                     }
+
+                 } else {
+
+                     _targetCube.getChildAt(0).tint = 0xFFFFFF;
+
+                     if (_self.mirrorMode) {
+                         _mirrorCube.getChildAt(0).tint = 0xFFFFFF;
+                     }
+
+                     if (brushType.font) {
+                         _targetCube.getChildAt(1).visible = true;
+                         _targetCube.getChildAt(1).text = brushType.font;
+                         _targetCube.getChildAt(1).x = cubeWidth / 2 - _targetCube.getChildAt(1).width / 2;
+                         _targetCube.getChildAt(1).y = cubeHeight / 2 - _targetCube.getChildAt(1).height / 2;
 
                          if (_self.mirrorMode) {
-                             _mirrorCube.getChildAt(0).tint = 0x666666
-                             _mirrorCube.getChildAt(1).visible = false
+                             _mirrorCube.getChildAt(1).visible = true;
+                             _mirrorCube.getChildAt(1).text = _mirrorReverseText;
+                             _mirrorCube.getChildAt(1).x = cubeWidth / 2 - _mirrorCube.getChildAt(1).width / 2;
+                             _mirrorCube.getChildAt(1).y = cubeHeight / 2 - _mirrorCube.getChildAt(1).height / 2;
                          }
 
                      } else {
-
-                         _targetCube.getChildAt(0).tint = 0xFFFFFF;
-
+                         _targetCube.getChildAt(1).visible = false;
                          if (_self.mirrorMode) {
-                             _mirrorCube.getChildAt(0).tint = 0xFFFFFF;
-                         }
-
-                         if (brushType.font) {
-                             _targetCube.getChildAt(1).visible = true;
-                             _targetCube.getChildAt(1).text = brushType.font;
-                             _targetCube.getChildAt(1).x = cubeWidth / 2 - _targetCube.getChildAt(1).width / 2;
-                             _targetCube.getChildAt(1).y = cubeHeight / 2 - _targetCube.getChildAt(1).height / 2;
-
-                             if (_self.mirrorMode) {
-                                 _mirrorCube.getChildAt(1).visible = true;
-                                 _mirrorCube.getChildAt(1).text = _mirrorReverseText;
-                                 _mirrorCube.getChildAt(1).x = cubeWidth / 2 - _mirrorCube.getChildAt(1).width / 2;
-                                 _mirrorCube.getChildAt(1).y = cubeHeight / 2 - _mirrorCube.getChildAt(1).height / 2;
-                             }
-
-                         } else {
-                             _targetCube.getChildAt(1).visible = false;
-                             if (_self.mirrorMode) {
-                                 _mirrorCube.getChildAt(1).visible = false
-                             }
+                             _mirrorCube.getChildAt(1).visible = false
                          }
                      }
-
-                     _targetCube.blockType = brushType.bType;
-                     _targetCube.blockContent = brushType.font;
-
-                     if (_self.mirrorMode) {
-                         _mirrorCube.blockType = brushType.bType;
-                         _mirrorCube.blockContent = _mirrorReverseText;
-                     }
-
                  }
+
+                 _targetCube.blockType = brushType.bType;
+                 _targetCube.blockContent = brushType.font;
+
+                 if (_self.mirrorMode) {
+                     _mirrorCube.blockType = brushType.bType;
+                     _mirrorCube.blockContent = _mirrorReverseText;
+                 }
+
+
                  break;
              }
+
          }
      }
 
@@ -260,7 +263,7 @@
 
          for (var i = 0; i < table.children.length; i++) {
 
-             var _outSymbol = '-';         
+             var _outSymbol = '-';
              if (table.children[i].blockType == "disabled") {
                  _outSymbol = '-';
 
@@ -276,11 +279,65 @@
 
          }
 
-       
          return _arr
-
-
      }
+
+
+     function transferAndRender(_data) {
+         var _reg = /[clmrgi+-]/ig;
+         var _data = _data.split('\n'),
+             _reData = [],
+             colCounter = 0;
+
+         for (var i = 0; i < _data.length; i++) {
+             _reData[i] = [];
+             var _col = _data[i].split(',');
+
+             for (var j = 0; j < _col.length; j++) {
+                 var _status = _col[j].match(_reg)
+                 if (_status) {
+                     _reData[i].push(_status[0].toUpperCase());
+                 } else {
+                     _reData[i].push("-");
+                 }
+
+             }
+         }
+
+
+         for (var i = 0; i < _reData.length; i++) {
+             for (j = 0; j < _reData[i].length; j++) {
+                 var _color,
+                     _text,
+                     _cube = table.getChildAt(colCounter),
+                     _fontVisible;
+
+                 if (_reData[i][j] == "-") {
+                     _color = 0x666666;
+                     _text = '';
+                     _fontVisible = false;
+                 } else {
+                     _color = 0xffffff;
+                     _text = "";
+                     _fontVisible = true;
+                     if (_reData[i][j] != "+") {
+                         _text = _reData[i][j];
+                     }
+                 }
+
+                 _cube.getChildAt(0).tint = _color;
+                 _cube.getChildAt(1).visible = _fontVisible;
+                 _cube.getChildAt(1).text = _text;
+                 _cube.getChildAt(1).x = cubeWidth / 2 - _cube.getChildAt(1).width / 2;
+                 _cube.getChildAt(1).y = cubeHeight / 2 - _cube.getChildAt(1).height / 2;
+
+                 colCounter++;
+             }
+         }
+
+         editAreaRenderer.render(stage);
+     }
+
 
      function anime() {
          animeRequest = window.requestAnimFrame(anime);

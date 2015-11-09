@@ -31,6 +31,7 @@
     </div>
     <div>
         <button onclick='getData()'>get data</button>
+          <button onclick='renderData()'>render data</button>
     </div>
     <script src="js/lib/pixi.js/bin/pixi.min.js"></script>
     <script src="js/lib/stats.js-master/build/stats.min.js"></script>
@@ -67,6 +68,11 @@
     function getData(){
         var _data = wj.getDataArray();
         inputCode.value = _data.join("\n");
+    }
+
+    function renderData(){
+        var _data = inputCode.value;
+        wj.transferAndRender(_data);
     }
     </script>
 </body>
