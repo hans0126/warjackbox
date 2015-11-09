@@ -23,6 +23,7 @@
      var brushType = null;
 
 
+     var paintStart = false;
 
      _self.init = function() {
          editAreaRenderer = new PIXI.autoDetectRenderer(360, 360);
@@ -31,15 +32,17 @@
          table.interactive = true;
          table.x = 20;
          table.y = 20;
-         
-         
 
 
-         table.mousedown = penDown;
-         table.mousemove = painting;
-         table.mouseup = penUp;
 
 
+         table.mousedown = function() {
+             paintStart = true;
+         }
+
+         table.mouseup = function() {
+             paintStart = false;
+         }
 
 
          for (var i = 0; i < 6; i++) {
@@ -68,15 +71,43 @@
                  cube.width = cubeWidth;
                  cube.height = cubeHeight;
 
+                 cube.interactive = true;
+
                  cube.blockType = "enabled";
                  cube.blockContent = '';
+                 cube.origanlColor = 0x334455;
 
-                 graphic.beginFill(0xFFFFFF);
+                 graphic.beginFill(cube.origanlColor);
                  graphic.drawRect(0, 0, cubeWidth, cubeHeight);
                  graphic.endFill();
 
                  cube.addChild(graphic);
                  cube.addChild(txt);
+
+                 cube.mousedown = function() {
+                     painProcess(this);
+                 }
+
+                 cube.mouseover = function(event) {
+                     var _this = this.getChildAt(0);
+                     _this.clear();
+                     _this.beginFill(0xcccccc);
+                     _this.lineStyle(2, 0xFF0000);
+                     _this.drawRect(0, 0, cubeWidth, cubeHeight);
+                     _this.endFill();
+                     if (paintStart) {
+                         painProcess(this);
+                     }
+
+                 }
+
+                 cube.mouseout = function(event) {
+                     var _this = this.getChildAt(0);
+                     _this.clear();
+                     _this.beginFill(this.origanlColor);
+                     _this.drawRect(0, 0, cubeWidth, cubeHeight);
+                     _this.endFill();
+                 }
 
                  table.addChild(cube);
              }
@@ -86,7 +117,8 @@
 
          table.hitArea = new PIXI.Rectangle(0, 0, table.width, table.height);
 
-         editAreaRenderer.render(stage);
+         anime();
+         // editAreaRenderer.render(stage);
      }
 
      function penDown(event) {
@@ -115,104 +147,94 @@
          window.cancelRequestAnimFrame(animeRequest);
      }
 
-     function painProcess(px, py) {
-         for (var i = 0; i < table.children.length; i++) {
-             if (px >= table.children[i].x &&
-                 px <= table.children[i].x + cubeWidth &&
-                 py >= table.children[i].y &&
-                 py <= table.children[i].y + cubeHeight) {
+     function painProcess(_cube) {
+         var _targetCube = _cube;
+         var _mirrorCube;
+         var _mirrorIndex
+         var _mirrorReverseText;
 
-                 var _targetCube = table.children[i];
-                 var _mirrorCube;
-                 var _mirrorIndex
-                 var _mirrorReverseText;
+         var _color = [0x666666, 0xFFFFFF];
 
-                 if (_self.mirrorMode) {
-
-                     if (i < 6) {
-                         _mirrorIndex = mirror[i];
-                     } else {
-                         _mirrorIndex = mirror[i % 6];
-                     }
-
-                     _mirrorCube = table.children[i + _mirrorIndex];
-
-                     switch (brushType.font) {
-                         case "L":
-                             _mirrorReverseText = "R";
-                             break;
-
-                         case "R":
-                             _mirrorReverseText = "L";
-                             break;
-
-                         case "M":
-                             _mirrorReverseText = "C";
-                             break;
-
-                         case "C":
-                             _mirrorReverseText = "M";
-                             break;
-
-                         default:
-                             _mirrorReverseText = brushType.font
-                     }
-                 }
-
-
-
-                 if (brushType.bType == 'disabled') {
-
-                     _targetCube.getChildAt(0).tint = 0x666666;
-                     _targetCube.getChildAt(1).visible = false;
-
-                     if (_self.mirrorMode) {
-                         _mirrorCube.getChildAt(0).tint = 0x666666
-                         _mirrorCube.getChildAt(1).visible = false
-                     }
-
-                 } else {
-
-                     _targetCube.getChildAt(0).tint = 0xFFFFFF;
-
-                     if (_self.mirrorMode) {
-                         _mirrorCube.getChildAt(0).tint = 0xFFFFFF;
-                     }
-
-                     if (brushType.font) {
-                         _targetCube.getChildAt(1).visible = true;
-                         _targetCube.getChildAt(1).text = brushType.font;
-                         _targetCube.getChildAt(1).x = cubeWidth / 2 - _targetCube.getChildAt(1).width / 2;
-                         _targetCube.getChildAt(1).y = cubeHeight / 2 - _targetCube.getChildAt(1).height / 2;
-
-                         if (_self.mirrorMode) {
-                             _mirrorCube.getChildAt(1).visible = true;
-                             _mirrorCube.getChildAt(1).text = _mirrorReverseText;
-                             _mirrorCube.getChildAt(1).x = cubeWidth / 2 - _mirrorCube.getChildAt(1).width / 2;
-                             _mirrorCube.getChildAt(1).y = cubeHeight / 2 - _mirrorCube.getChildAt(1).height / 2;
-                         }
-
-                     } else {
-                         _targetCube.getChildAt(1).visible = false;
-                         if (_self.mirrorMode) {
-                             _mirrorCube.getChildAt(1).visible = false
-                         }
-                     }
-                 }
-
-                 _targetCube.blockType = brushType.bType;
-                 _targetCube.blockContent = brushType.font;
-
-                 if (_self.mirrorMode) {
-                     _mirrorCube.blockType = brushType.bType;
-                     _mirrorCube.blockContent = _mirrorReverseText;
-                 }
-
-
-                 break;
+         if (_self.mirrorMode) {
+             var i = table.getChildIndex(_cube);
+             if (i < 6) {
+                 _mirrorIndex = mirror[i];
+             } else {
+                 _mirrorIndex = mirror[i % 6];
              }
 
+             _mirrorCube = table.getChildAt(i + _mirrorIndex);
+
+             switch (brushType.font) {
+                 case "L":
+                     _mirrorReverseText = "R";
+                     break;
+
+                 case "R":
+                     _mirrorReverseText = "L";
+                     break;
+
+                 case "M":
+                     _mirrorReverseText = "C";
+                     break;
+
+                 case "C":
+                     _mirrorReverseText = "M";
+                     break;
+
+                 default:
+                     _mirrorReverseText = brushType.font
+             }
          }
+
+         if (brushType.bType == 'disabled') {
+             reDrawCubeBg(_targetCube.getChildAt(0), _color[0]);
+             _targetCube.getChildAt(1).visible = false;
+
+             if (_self.mirrorMode) {
+                 reDrawCubeBg(_mirrorCube.getChildAt(0), _color[0]);
+                 _mirrorCube.getChildAt(1).visible = false;
+             }
+
+         } else {
+
+             reDrawCubeBg(_targetCube.getChildAt(0), _color[1]);
+
+             if (_self.mirrorMode) {
+                 reDrawCubeBg(_mirrorCube.getChildAt(0), _color[1]);
+             }
+
+             if (brushType.font) {
+                 _targetCube.getChildAt(1).visible = true;
+                 _targetCube.getChildAt(1).text = brushType.font;
+                 _targetCube.getChildAt(1).x = cubeWidth / 2 - _targetCube.getChildAt(1).width / 2;
+                 _targetCube.getChildAt(1).y = cubeHeight / 2 - _targetCube.getChildAt(1).height / 2;
+
+                 if (_self.mirrorMode) {
+                     _mirrorCube.getChildAt(1).visible = true;
+                     _mirrorCube.getChildAt(1).text = _mirrorReverseText;
+                     _mirrorCube.getChildAt(1).x = cubeWidth / 2 - _mirrorCube.getChildAt(1).width / 2;
+                     _mirrorCube.getChildAt(1).y = cubeHeight / 2 - _mirrorCube.getChildAt(1).height / 2;
+                 }
+
+             } else {
+                 _targetCube.getChildAt(1).visible = false;
+                 if (_self.mirrorMode) {
+                     _mirrorCube.getChildAt(1).visible = false
+                 }
+             }
+         }
+
+         _targetCube.blockType = brushType.bType;
+         _targetCube.blockContent = brushType.font;
+         _targetCube.origanlColor = _targetCube.getChildAt(0).tint;
+         console.log( _targetCube.origanlColor);
+         if (_self.mirrorMode) {
+             _mirrorCube.blockType = brushType.bType;
+             _mirrorCube.blockContent = _mirrorReverseText;
+             _mirrorCube.origanlColor = _mirrorCube.getChildAt(0).tint;
+         }
+
      }
 
      function resetTable() {
@@ -338,6 +360,12 @@
          editAreaRenderer.render(stage);
      }
 
+     function reDrawCubeBg(_cube, _color) {
+         _cube.clear();
+         _cube.beginFill(_color);
+         _cube.drawRect(0, 0, cubeWidth, cubeHeight);
+         _cube.endFill();
+     }
 
      function anime() {
          animeRequest = window.requestAnimFrame(anime);
