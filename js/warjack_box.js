@@ -173,7 +173,7 @@
          var _mirrorIndex
          var _mirrorReverseText;
          var _currentColor;
-         
+
          if (_self.mirrorMode) {
              var _idx;
              if (_self.displayMode == 0) {
@@ -282,14 +282,16 @@
      }
 
      function resetTable() {
-         for (var i = 0; i < table.children.length; i++) {
-             var _cube = table.getChildAt(i);
-             reDrawCubeBg(_cube.getChildAt(0), cubeColor[0]);
-
-             _cube.getChildAt(1).visible = false;
-             _cube.blockType = null;
-             _cube.blockContent = null;
-             _cube.origanlColor = cubeColor[0];
+         var _array = [table, table2];
+         for (var k = 0; k < _array.length; k++) {
+             for (var i = 0; i < _array[k].children.length; i++) {
+                 var _cube = _array[k].getChildAt(i);
+                 reDrawCubeBg(_cube.getChildAt(0), cubeColor[0]);
+                 _cube.getChildAt(1).visible = false;
+                 _cube.blockType = null;
+                 _cube.blockContent = null;
+                 _cube.origanlColor = cubeColor[0];
+             }
          }
      }
 
