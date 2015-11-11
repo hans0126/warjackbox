@@ -18,16 +18,26 @@
     </div>
     <div>
         <button onclick='gb("C")'>C</button>
-        <button onclick='gb("L")'>L</button>
+        <button onclick='gb("S")'>S</button>
         <button onclick='gb("M")'>M</button>
+        <button onclick='gb("L")'>L</button>
         <button onclick='gb("R")'>R</button>
         <button onclick='gb("G")'>G</button>
         <button onclick='gb("I")'>I</button>
     </div>
     <div>
         <button onclick='resetTb()'>Reset</button>
-        <label for="mirror">
-            <input type="checkbox" id='mirror' onchange="changeMode(this)" /> mirror mode
+        <label>
+            <input type="checkbox" onchange="changeMode(this)" /> mirror mode
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" onchange="changeLRbind(this)" id="lrCheckbox" /> L/R bind
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" onchange="changeMCbind(this)" id="mcCheckbox" /> M/C bind
         </label>
     </div>
     <div>
@@ -50,10 +60,13 @@
 
     loader.load();
 
-    var inputCode = document.getElementById('inputCode');
+    var inputCode = document.getElementById('inputCode'),
+        lrCheckbox = document.getElementById('lrCheckbox'),
+        mcCheckbox = document.getElementById('mcCheckbox');
     var wj = new warjackBox();
 
-
+    lrCheckbox.checked = wj.LRbind;
+    mcCheckbox.checked = wj.MCbind;
 
     wj.init();
 
@@ -67,7 +80,6 @@
 
     function changeMode(element) {
         wj.mirrorMode = element.checked;
-
     }
 
     function getData() {
@@ -81,7 +93,18 @@
     }
 
     function changeDisplayMode(_mode) {
-        wj.changeMode(_mode);
+        wj.changeMode(_mode, function() {
+            lrCheckbox.checked = wj.LRbind;
+            mcCheckbox.checked = wj.MCbind;
+        });
+    }
+
+    function changeLRbind(element) {
+        wj.LRbind = element.checked;
+    }
+
+    function changeMCbind(element) {
+        wj.MCbind = element.checked;
     }
     </script>
 </body>

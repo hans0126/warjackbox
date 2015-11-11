@@ -11,6 +11,8 @@
      _self.transferAndRender = transferAndRender;
      _self.changeMode = changeMode;
      _self.displayMode = 0; //0:warjack 1:colossus
+     _self.LRbind = true;
+     _self.MCbind = true;
 
      var stage = new PIXI.Container(),
          table = new PIXI.Container(),
@@ -35,6 +37,7 @@
          }
 
          editAreaRenderer = new PIXI.autoDetectRenderer(_areaWidth, areaHeight);
+         editAreaRenderer.roundPixels = true;
          document.getElementById("c").appendChild(editAreaRenderer.view);
 
          table.interactive = table2.interactive = true;
@@ -92,14 +95,20 @@
          window.cancelRequestAnimFrame(animeRequest);
      }
 
-     function changeMode(_mode) {
+     function changeMode(_mode, _fn) {
          _self.displayMode = _mode
          if (_mode == 0) {
              table2.visible = false;
              editAreaRenderer.resize(areaWidth, areaHeight);
+             _self.MCbind = true;
          } else {
              table2.visible = true;
              editAreaRenderer.resize(areaWidth * 2, areaHeight);
+             _self.MCbind = false;
+         }
+
+         if (typeof(_fn) === "function") {
+             _fn();
          }
      }
 
@@ -195,19 +204,40 @@
 
              switch (brushType.font) {
                  case "L":
-                     _mirrorReverseText = "R";
+
+                     if (_self.LRbind) {
+                         _mirrorReverseText = "R";
+                     } else {
+                         _mirrorReverseText = brushType.font;
+                     }
                      break;
 
                  case "R":
-                     _mirrorReverseText = "L";
+                     if (_self.LRbind) {
+                         _mirrorReverseText = "L";
+                     } else {
+                         _mirrorReverseText = brushType.font;
+                     }
                      break;
 
                  case "M":
-                     _mirrorReverseText = "C";
+
+                     if (_self.MCbind) {
+                         _mirrorReverseText = "C";
+                     } else {
+                         _mirrorReverseText = brushType.font;
+                     }
                      break;
 
                  case "C":
-                     _mirrorReverseText = "M";
+                     if (_self.MCbind) {
+                         _mirrorReverseText = "M";
+                     } else {
+                         _mirrorReverseText = brushType.font;
+                     }
+                     break;
+                 case "S":
+                     _mirrorReverseText = "S";
                      break;
 
                  default:
