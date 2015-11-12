@@ -13,6 +13,8 @@
      _self.displayMode = 0; //0:warjack 1:colossus
      _self.LRbind = true;
      _self.MCbind = true;
+     _self.tableData = [];
+     _self.changeDataRender = changeDataRender;
 
      var stage = new PIXI.Container(),
          table = new PIXI.Container(),
@@ -27,23 +29,35 @@
      var brushType = null;
      var paintStart = false;
      var cubeColor = [0x666666, 0xFFFFFF, 0xcccccc]; //disable,normal,hover
-     var areaWidth = 360;
-     var areaHeight = 360;
+     var areaWidth = 300;
+     var areaHeight = 300;
 
      function init() {
-         var _areaWidth = areaWidth
+
+         var _areaWidth = areaWidth;
+
+         switch (_self.tableData.length) {
+             case 1:
+                 _self.displayMode = 0;
+                 break;
+
+             case 2:
+                 _self.displayMode = 1;
+                 break;
+         }
+
          if (_self.displayMode == 1) {
              _areaWidth = areaWidth * 2;
          }
+
 
          editAreaRenderer = new PIXI.autoDetectRenderer(_areaWidth, areaHeight);
          editAreaRenderer.roundPixels = true;
          document.getElementById("c").appendChild(editAreaRenderer.view);
 
          table.interactive = table2.interactive = true;
-         table.x = 20;
-         table.y = table2.y = 20;
-         table2.x = 380;
+         table.buttonMode = true;
+         table.defaultCursor = "crosshair";
 
          table.mousedown = table2.mousedown = function() {
              if (!brushType) return
@@ -66,9 +80,18 @@
          table.idName = "table";
          table2.idName = "table2";
 
+         table.x = 20;
+         table.y = table2.y = areaHeight / 2 - table.height / 2;
+
+         table2.x = table.width + table.x + 25;
+
+
+
          if (_self.displayMode == 0) {
              table2.visible = false;
          }
+
+         loadTableData();
 
          anime();
      }
@@ -352,42 +375,72 @@
      }
 
      function getDataArray() {
-         var _arr = [];
+         var tableGroup = [table, table2],
+             loadLimit,
+             returnArr = [];
 
-         for (var i = 0; i < 6; i++) {
-             _arr[i] = [];
+         if (_self.displayMode == 0) {
+             loadLimit = 1;
+         } else {
+             loadLimit = 2;
          }
 
-         for (var i = 0; i < table.children.length; i++) {
+         for (var i = 0; i < loadLimit; i++) {
 
-             var _outSymbol = '-';
-             if (table.children[i].blockType == "disabled") {
-                 _outSymbol = '-';
+             var _arr = [];
 
-             } else {
-                 if (table.children[i].blockContent != '') {
-                     _outSymbol = table.children[i].blockContent;
-                 } else {
-                     _outSymbol = '+';
-                 }
+             for (var j = 0; j < 6; j++) {
+                 _arr[j] = [];
              }
 
-             _arr[Math.floor(i / 6)].push(_outSymbol);
+             for (var j = 0; j < tableGroup[i].children.length; j++) {
+
+                 var _outSymbol = '-';
+                 if (tableGroup[i].getChildAt(j).blockType == "disabled") {
+                     _outSymbol = '-';
+
+                 } else {
+                     if (tableGroup[i].getChildAt(j).blockContent != '') {
+                         _outSymbol = tableGroup[i].getChildAt(j).blockContent;
+                     } else {
+                         _outSymbol = '+';
+                     }
+                 }
+
+                 _arr[Math.floor(j / 6)].push(_outSymbol);
+
+             }
+
+             returnArr.push(_arr)
 
          }
 
-         return _arr
+         return returnArr
      }
 
-     function transferAndRender(_data) {
-         var _reg = /[clmrgi+-]/ig;
-         var _data = _data.split('\n'),
+     function changeDataRender(_data) {
+         _self.tableData = _data;      
+         loadTableData();
+     }
+
+     function loadTableData() {
+
+         var _tempTable = [table, table2]
+         for (var i = 0; i < _self.tableData.length; i++) {          
+             transferAndRender(_self.tableData[i], _tempTable[i]);
+         }
+     }
+
+     function transferAndRender(_data, _table) {
+       
+
+         var _reg = /[clmrgi+-]/ig,
              _reData = [],
              colCounter = 0;
 
          for (var i = 0; i < _data.length; i++) {
              _reData[i] = [];
-             var _col = _data[i].split(',');
+             var _col = _data[i];
 
              for (var j = 0; j < _col.length; j++) {
                  var _status = _col[j].match(_reg)
@@ -400,34 +453,45 @@
              }
          }
 
-         for (var i = 0; i < _reData.length; i++) {
-             for (j = 0; j < _reData[i].length; j++) {
-                 var _color,
-                     _text,
-                     _cube = table.getChildAt(colCounter),
-                     _fontVisible;
+         loopBreak:
 
-                 if (_reData[i][j] == "-") {
-                     _color = cubeColor[0];
-                     _text = '';
-                     _fontVisible = false;
-                 } else {
-                     _color = cubeColor[1];
-                     _text = "";
-                     _fontVisible = true;
-                     if (_reData[i][j] != "+") {
-                         _text = _reData[i][j];
+             for (var i = 0; i < _reData.length; i++) {
+                 for (j = 0; j < _reData[i].length; j++) {
+
+                     var _color,
+                         _text,
+                         _cube = _table.getChildAt(colCounter),
+                         _fontVisible,
+                         _blockType;
+
+                     if (_reData[i][j] == "-") {
+                         _blockType = "disabled";
+                         _color = cubeColor[0];
+                         _text = '';
+                         _fontVisible = false;
+                     } else {
+                         _blockType = "enabled";
+                         _color = cubeColor[1];
+                         _text = "";
+                         _fontVisible = true;
+                         if (_reData[i][j] != "+") {
+                             _text = _reData[i][j];
+                         }
+                     }
+
+                     reDrawCubeBg(_cube.getChildAt(0), _color);
+                     drawSymbol(_cube.getChildAt(1), _text, _fontVisible);
+                     _cube.origanlColor = _color;
+                     _cube.blockType = _blockType;
+                     _cube.blockContent = _text;
+
+                     colCounter++;
+                     if (colCounter == 36) {
+                         break loopBreak;
                      }
                  }
-
-                 reDrawCubeBg(_cube.getChildAt(0), _color);
-                 drawSymbol(_cube.getChildAt(1), _text, _fontVisible);
-
-                 colCounter++;
              }
-         }
 
-         editAreaRenderer.render(stage);
      }
 
      function reDrawCubeBg(_cube, _color, _line) {

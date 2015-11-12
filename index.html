@@ -42,6 +42,7 @@
     </div>
     <div>
         <textarea id="inputCode" cols="30" rows="10"></textarea>
+        <textarea id="inputCode2" cols="30" rows="10"></textarea>
     </div>
     <div>
         <button onclick='getData()'>get data</button>
@@ -61,12 +62,44 @@
     loader.load();
 
     var inputCode = document.getElementById('inputCode'),
+        inputCode2 = document.getElementById('inputCode2'),
         lrCheckbox = document.getElementById('lrCheckbox'),
         mcCheckbox = document.getElementById('mcCheckbox');
+
+    var inputGroup = [inputCode, inputCode2]
+
+    var fakeData = [];
+
+    fakeData.push([
+        ["-", "-", "-", "-", "-", "-"],
+        ["+", "+", "+", "+", "+", "+"],
+        ["+", "+", "+", "+", "+", "+"],
+        ["-", "-", "+", "-", "-", "-"],
+        ["-", "-", "-", "-", "-", "-"],
+        ["-", "-", "-", "-", "-", "-"]
+    ])
+
+    fakeData.push([
+        ["-", "-", "-", "-", "-", "-"],
+        ["+", "+", "+", "+", "+", "+"],
+        ["+", "+", "+", "+", "+", "+"],
+        ["-", "-", "+", "-", "-", "-"],
+        ["-", "-", "-", "C", "-", "-"],
+        ["-", "-", "-", "-", "-", "-"]
+    ])
+
+
+    for (var i = 0; i < fakeData.length; i++) {
+        inputGroup[i].value = fakeData[i].join("\n");
+    }
+
+
     var wj = new warjackBox();
 
     lrCheckbox.checked = wj.LRbind;
     mcCheckbox.checked = wj.MCbind;
+
+    wj.tableData = fakeData;
 
     wj.init();
 
@@ -84,12 +117,31 @@
 
     function getData() {
         var _data = wj.getDataArray();
-        inputCode.value = _data.join("\n");
+        for (var i = 0; i < _data.length; i++) {
+            inputGroup[i].value = _data[i].join("\n");
+        }
     }
 
     function renderData() {
-        var _data = inputCode.value;
-        wj.transferAndRender(_data);
+        var _data = [];
+
+        for (var i = 0; i < inputGroup.length; i++) {
+            var _tempArr;
+            var _combineArr = [];
+            if (inputGroup[i].value != '') {
+                _tempArr = inputGroup[i].value.split("\n");
+                // _tempArr = _tempArr.split(",");
+
+                for (var j = 0; j < _tempArr.length; j++) {
+                    _combineArr.push(_tempArr[j].split(","));
+                }
+
+                _data.push(_combineArr);
+            }
+        }
+    
+        
+        wj.changeDataRender(_data);
     }
 
     function changeDisplayMode(_mode) {
