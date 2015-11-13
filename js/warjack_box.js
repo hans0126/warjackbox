@@ -2,23 +2,24 @@
 
      var _self = this;
 
-     var animeRequest;
+     //methods
      _self.init = init;
      _self.getBrush = getBrush;
      _self.resetTable = resetTable;
-     _self.mirrorMode = false;
+     _self.changeDataRender = changeDataRender;
      _self.getDataArray = getDataArray;
-     _self.transferAndRender = transferAndRender;
      _self.changeMode = changeMode;
+     _self.exportImg = exportImg;
+     //options
+     _self.mirrorMode = false;
      _self.displayMode = 0; //0:warjack 1:colossus
      _self.LRbind = true;
      _self.MCbind = true;
      _self.tableData = [];
-     _self.changeDataRender = changeDataRender;
 
      var stage = new PIXI.Container(),
          table = new PIXI.Container(),
-         table2 = new PIXI.Container()
+         table2 = new PIXI.Container();
 
      var cubeWidth = 40,
          cubeHeight = 40;
@@ -32,7 +33,12 @@
      var areaWidth = 300;
      var areaHeight = 300;
 
-     function init() {
+     function init(_element) {
+
+         if (!_element) {
+             console.log('%c lose stage element!', 'background: #F00; color: #FFF');
+             return
+         }
 
          var _areaWidth = areaWidth;
 
@@ -50,10 +56,9 @@
              _areaWidth = areaWidth * 2;
          }
 
-
          editAreaRenderer = new PIXI.autoDetectRenderer(_areaWidth, areaHeight);
          editAreaRenderer.roundPixels = true;
-         document.getElementById("c").appendChild(editAreaRenderer.view);
+         _element.appendChild(editAreaRenderer.view);
 
          table.interactive = table2.interactive = true;
          table.buttonMode = true;
@@ -80,12 +85,10 @@
          table.idName = "table";
          table2.idName = "table2";
 
-         table.x = 20;
+         table.x = areaWidth / 2 - table.width / 2;
          table.y = table2.y = areaHeight / 2 - table.height / 2;
 
-         table2.x = table.width + table.x + 25;
-
-
+         table2.x = areaWidth + areaWidth / 2 - table.width / 2
 
          if (_self.displayMode == 0) {
              table2.visible = false;
@@ -94,28 +97,6 @@
          loadTableData();
 
          anime();
-     }
-
-     function penDown(event) {
-         if (!brushType) return
-
-         anime();
-         this.dragging = true;
-         var newPosition = event.data.getLocalPosition(this);
-         painProcess(newPosition.x, newPosition.y);
-     }
-
-     function painting(event) {
-         if (this.dragging) {
-             var newPosition = event.data.getLocalPosition(this);
-             painProcess(newPosition.x, newPosition.y);
-         }
-     }
-
-     function penUp() {
-         this.dragging = false;
-         console.log("A");
-         window.cancelRequestAnimFrame(animeRequest);
      }
 
      function changeMode(_mode, _fn) {
@@ -331,21 +312,30 @@
              }
              return _index
          }
-
      }
 
-     function resetTable() {
+     function resetTable(_fn) {
          var _array = [table, table2];
          for (var k = 0; k < _array.length; k++) {
              for (var i = 0; i < _array[k].children.length; i++) {
                  var _cube = _array[k].getChildAt(i);
                  reDrawCubeBg(_cube.getChildAt(0), cubeColor[0]);
                  _cube.getChildAt(1).visible = false;
-                 _cube.blockType = null;
-                 _cube.blockContent = null;
+                 _cube.blockType = "enabled";
+                 _cube.blockContent = "-";
                  _cube.origanlColor = cubeColor[0];
              }
          }
+
+         if (typeof(_fn) == "function") {
+             _fn(getDataArray())
+         }
+     }
+
+
+     function exportImg() {
+         editAreaRenderer.render(stage);
+         return editAreaRenderer.view.toDataURL("image/png");
      }
 
 
@@ -419,22 +409,21 @@
      }
 
      function changeDataRender(_data) {
-         _self.tableData = _data;      
+         _self.tableData = _data;
          loadTableData();
      }
 
      function loadTableData() {
 
          var _tempTable = [table, table2]
-         for (var i = 0; i < _self.tableData.length; i++) {          
+         for (var i = 0; i < _self.tableData.length; i++) {
              transferAndRender(_self.tableData[i], _tempTable[i]);
          }
      }
 
      function transferAndRender(_data, _table) {
-       
 
-         var _reg = /[clmrgi+-]/ig,
+         var _reg = /[clmrgis+-]/ig,
              _reData = [],
              colCounter = 0;
 
@@ -512,26 +501,7 @@
      }
 
      function anime() {
-         animeRequest = window.requestAnimFrame(anime);
+         window.requestAnimFrame(anime);
          editAreaRenderer.render(stage);
      }
  }
-
-
- window.requestAnimFrame = (function() {
-     return window.requestAnimationFrame ||
-         window.webkitRequestAnimationFrame ||
-         window.mozRequestAnimationFrame ||
-         function(callback) {
-             window.setTimeout(callback, 1000 / 60);
-         };
- })();
-
- window.cancelRequestAnimFrame = (function() {
-     return window.cancelAnimationFrame ||
-         window.webkitCancelRequestAnimationFrame ||
-         window.mozCancelRequestAnimationFrame ||
-         window.oCancelRequestAnimationFrame ||
-         window.msCancelRequestAnimationFrame ||
-         clearTimeout
- })();

@@ -7,49 +7,77 @@
 </head>
 
 <body>
-    <div>
-        <button onclick="changeDisplayMode(0)">Single</button>
-        <button onclick="changeDisplayMode(1)">Double</button>
-    </div>
     <div id="c"></div>
-    <div>
-        <button onclick='gb("disabled")'>Disabled</button>
-        <button onclick='gb("enabled")'>Enabled</button>
-    </div>
-    <div>
-        <button onclick='gb("C")'>C</button>
-        <button onclick='gb("S")'>S</button>
-        <button onclick='gb("M")'>M</button>
-        <button onclick='gb("L")'>L</button>
-        <button onclick='gb("R")'>R</button>
-        <button onclick='gb("G")'>G</button>
-        <button onclick='gb("I")'>I</button>
-    </div>
-    <div>
-        <button onclick='resetTb()'>Reset</button>
-        <label>
-            <input type="checkbox" onchange="changeMode(this)" /> mirror mode
-        </label>
-    </div>
-    <div>
-        <label>
-            <input type="checkbox" onchange="changeLRbind(this)" id="lrCheckbox" /> L/R bind
-        </label>
-        <br>
-        <label>
-            <input type="checkbox" onchange="changeMCbind(this)" id="mcCheckbox" /> M/C bind
-        </label>
-    </div>
-    <div>
-        <textarea id="inputCode" cols="30" rows="10"></textarea>
-        <textarea id="inputCode2" cols="30" rows="10"></textarea>
-    </div>
-    <div>
-        <button onclick='getData()'>get data</button>
-        <button onclick='renderData()'>render data</button>
-    </div>
+    <table>
+        <tr>
+            <td>
+                display mode:
+                <button onclick="changeDisplayMode(0)">Single</button>
+                <button onclick="changeDisplayMode(1)">Double</button>
+            </td>
+        </tr>
+        <tr>
+            <td>brush:
+                <button onclick='gb("disabled")'>Disabled</button>
+                <button onclick='gb("enabled")'>Enabled</button>
+                <button onclick='gb("C")'>C</button>
+                <button onclick='gb("S")'>S</button>
+                <button onclick='gb("M")'>M</button>
+                <button onclick='gb("L")'>L</button>
+                <button onclick='gb("R")'>R</button>
+                <button onclick='gb("G")'>G</button>
+                <button onclick='gb("I")'>I</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick='resetTb()'>Reset Table</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" onchange="changeMode(this)" /> mirror mode
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" onchange="changeLRbind(this)" id="lrCheckbox" /> L/R bind
+                </label>
+                <br>
+                <label>
+                    <input type="checkbox" onchange="changeMCbind(this)" id="mcCheckbox" /> M/C bind
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick='getData()'>get data</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <textarea id="inputCode" cols="30" rows="10"></textarea>
+                <textarea id="inputCode2" cols="30" rows="10"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick='renderData()'>render data</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button onclick='getImg()'>export Image</button>
+                <img src="" alt="" id="exportedImg" style="display:block;">
+            </td>
+        </tr>
+    </table>
     <script src="js/lib/pixi.js/bin/pixi.min.js"></script>
     <script src="js/lib/stats.js-master/build/stats.min.js"></script>
+    <script src="js/requestAnimFrame.js"></script>
     <script src="js/warjack_box.js"></script>
     <script>
     var loader = PIXI.loader;
@@ -64,7 +92,9 @@
     var inputCode = document.getElementById('inputCode'),
         inputCode2 = document.getElementById('inputCode2'),
         lrCheckbox = document.getElementById('lrCheckbox'),
-        mcCheckbox = document.getElementById('mcCheckbox');
+        mcCheckbox = document.getElementById('mcCheckbox'),
+        stage = document.getElementById('c'),
+        exportedImg = document.getElementById('exportedImg');
 
     var inputGroup = [inputCode, inputCode2]
 
@@ -101,14 +131,22 @@
 
     wj.tableData = fakeData;
 
-    wj.init();
+    wj.init(stage);
 
     function gb(b) {
         wj.getBrush(b);
     }
 
     function resetTb() {
-        wj.resetTable();
+        wj.resetTable(function(re) {
+            for (var i = 0; i < inputGroup.length; i++) {
+                if (typeof(re[i]) == "object") {
+                    inputGroup[i].value = re[i].join("\n");
+                } else {
+                    inputGroup[i].value = '';
+                }
+            }
+        });
     }
 
     function changeMode(element) {
@@ -117,15 +155,20 @@
 
     function getData() {
         var _data = wj.getDataArray();
-        for (var i = 0; i < _data.length; i++) {
-            inputGroup[i].value = _data[i].join("\n");
+        for (var i = 0; i < inputGroup.length; i++) {
+            if (typeof(_data[i]) == "object") {
+                inputGroup[i].value = _data[i].join("\n");
+            } else {
+                inputGroup[i].value = '';
+            }
         }
     }
 
     function renderData() {
         var _data = [];
+        // console.log(wj.displayMode);
 
-        for (var i = 0; i < inputGroup.length; i++) {
+        for (var i = 0; i < wj.displayMode + 1; i++) {
             var _tempArr;
             var _combineArr = [];
             if (inputGroup[i].value != '') {
@@ -139,8 +182,7 @@
                 _data.push(_combineArr);
             }
         }
-    
-        
+
         wj.changeDataRender(_data);
     }
 
@@ -157,6 +199,12 @@
 
     function changeMCbind(element) {
         wj.MCbind = element.checked;
+    }
+
+    function getImg() {
+        var pic = wj.exportImg();
+        exportedImg.src = pic;
+
     }
     </script>
 </body>
