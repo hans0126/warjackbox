@@ -10,6 +10,7 @@
      _self.getDataArray = getDataArray;
      _self.changeMode = changeMode;
      _self.exportImg = exportImg;
+     _self.getTotalType = getTotalType;
      //options
      _self.mirrorMode = false;
      _self.displayMode = 0; //0:warjack 1:colossus
@@ -498,6 +499,32 @@
          _symbol.text = _text;
          _symbol.x = cubeWidth / 2 - _symbol.width / 2;
          _symbol.y = cubeHeight / 2 - _symbol.height / 2;
+     }
+
+     function getTotalType() {
+         var _data = getDataArray();
+         var _reSystem = [],
+             _life = 0;
+
+         for (var i = 0; i < _data.length; i++) {
+             for (var j = 0; j < _data[i].length; j++) {
+                 for (var k = 0; k < _data[i][j].length; k++) {
+                     var _va = _data[i][j][k];
+                     if (_reSystem.indexOf(_va) == -1 && _va != "+" && _va != "-") {
+                         _reSystem.push(_va);
+                     }
+                     if (_va != "-") {
+                         _life++;
+                     }
+                 }
+             }
+         }
+
+         return {
+             life: _life,
+             system: _reSystem
+         }
+
      }
 
      function anime() {

@@ -74,6 +74,14 @@
                 <img src="" alt="" id="exportedImg" style="display:block;">
             </td>
         </tr>
+         <tr>
+            <td>
+                <button onclick='getTotalType()'>get total type</button>
+               
+            </td>
+        </tr>
+
+        
     </table>
     <script src="js/lib/pixi.js/bin/pixi.min.js"></script>
     <script src="js/lib/stats.js-master/build/stats.min.js"></script>
@@ -205,6 +213,10 @@
         var pic = wj.exportImg();
         exportedImg.src = pic;
 
+    }
+
+    function getTotalType(){
+       console.log(wj.getTotalType());
     }
     </script>
 </body>
