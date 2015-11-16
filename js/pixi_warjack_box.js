@@ -18,6 +18,9 @@
      _self.MCbind = true;
      _self.tableData = [];
 
+     _self.requestAnime = null
+
+
      var stage = new PIXI.Container(),
          table = new PIXI.Container(),
          table2 = new PIXI.Container();
@@ -28,7 +31,10 @@
      var arrData = [];
      var mirror = [5, 3, 1, -1, -3, -5];
      var reverseMirror = [-5, -3, -1, 1, 3, 5];
-     var brushType = null;
+     var brushType = {
+         bType: 'enabled',
+         font: ""
+     };
      var paintStart = false;
      var cubeColor = [0x666666, 0xFFFFFF, 0xcccccc]; //disable,normal,hover
      var areaWidth = 300;
@@ -148,7 +154,7 @@
                  cube.interactive = true;
 
                  cube.blockType = "enabled";
-                 cube.blockContent = '';
+                 cube.blockContent = '-';
                  cube.origanlColor = cubeColor[0];
 
                  graphic.beginFill(cube.origanlColor);
@@ -339,7 +345,6 @@
          return editAreaRenderer.view.toDataURL("image/png");
      }
 
-
      function getBrush(_b) {
 
          switch (_b) {
@@ -528,7 +533,7 @@
      }
 
      function anime() {
-         window.requestAnimFrame(anime);
+         _self.requestAnime = window.requestAnimFrame(anime);
          editAreaRenderer.render(stage);
      }
  }
