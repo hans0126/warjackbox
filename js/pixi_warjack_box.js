@@ -506,10 +506,16 @@
          _symbol.y = cubeHeight / 2 - _symbol.height / 2;
      }
 
-     function getTotalType() {
-         var _data = getDataArray();
-         var _reSystem = [],
+     function getTotalType(_array) {
+         var _data,
+             _reSystem = [],
              _life = 0;
+
+         if (typeof(_array) == "object") {
+             _data = _array
+         } else {
+             _data = getDataArray();
+         }
 
          for (var i = 0; i < _data.length; i++) {
              for (var j = 0; j < _data[i].length; j++) {
