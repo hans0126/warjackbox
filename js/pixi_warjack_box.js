@@ -17,9 +17,7 @@
      _self.LRbind = true;
      _self.MCbind = true;
      _self.tableData = [];
-
-     _self.requestAnime = null
-
+     _self.requestAnime = null;
 
      var stage = new PIXI.Container(),
          table = new PIXI.Container(),
@@ -44,7 +42,7 @@
 
          if (!_element) {
              console.log('%c lose stage element!', 'background: #F00; color: #FFF');
-             return
+             return;
          }
 
          var _areaWidth = areaWidth;
@@ -72,13 +70,13 @@
          table.defaultCursor = "crosshair";
 
          table.mousedown = table2.mousedown = function() {
-             if (!brushType) return
+             if (!brushType) return;
              paintStart = true;
-         }
+         };
 
          table.mouseup = table.mouseout = table2.mouseup = table2.mouseout = function() {
              paintStart = false;
-         }
+         };
 
          createCubes(table);
          createCubes(table2);
@@ -95,9 +93,9 @@
          table.x = areaWidth / 2 - table.width / 2;
          table.y = table2.y = areaHeight / 2 - table.height / 2;
 
-         table2.x = areaWidth + areaWidth / 2 - table.width / 2
+         table2.x = areaWidth + areaWidth / 2 - table.width / 2;
 
-         if (_self.displayMode == 0) {
+         if (_self.displayMode === 0) {
              table2.visible = false;
          }
 
@@ -107,8 +105,8 @@
      }
 
      function changeMode(_mode, _fn) {
-         _self.displayMode = _mode
-         if (_mode == 0) {
+         _self.displayMode = _mode;
+         if (_mode === 0) {
              table2.visible = false;
              editAreaRenderer.resize(areaWidth, areaHeight);
              _self.MCbind = true;
@@ -164,39 +162,43 @@
                  cube.addChild(graphic);
                  cube.addChild(txt);
 
-                 cube.mousedown = function() {
-                     if (!brushType) return
-                     painProcess(this);
-                 }
+                 cube.mousedown = cubeMousedown;
 
-                 cube.mouseover = function(event) {
-                     reDrawCubeBg(this.getChildAt(0), cubeColor[2], true);
+                 cube.mouseover = cubeMouseover;
 
-                     if (paintStart) {
-                         painProcess(this);
-                     }
-                 }
-
-                 cube.mouseout = function(event) {
-                     reDrawCubeBg(this.getChildAt(0), this.origanlColor);
-                 }
+                 cube.mouseout = cubeMouseout;
 
                  _table.addChild(cube);
              }
          }
      }
 
+     function cubeMousedown() {
+         if (!brushType) return;
+         painProcess(this);
+     }
+
+     function cubeMouseover() {
+         reDrawCubeBg(this.getChildAt(0), cubeColor[2], true);
+         if (paintStart) {
+             painProcess(this);
+         }
+     }
+
+     function cubeMouseout() {
+         reDrawCubeBg(this.getChildAt(0), this.origanlColor);
+     }
 
      function painProcess(_cube) {
          var _targetCube = _cube;
          var _mirrorCube;
-         var _mirrorIndex
+         var _mirrorIndex;
          var _mirrorReverseText;
          var _currentColor;
 
          if (_self.mirrorMode) {
              var _idx;
-             if (_self.displayMode == 0) {
+             if (_self.displayMode === 0) {
                  _idx = table.getChildIndex(_cube);
                  _mirrorIndex = getMirrorIdx(_idx);
                  _mirrorCube = table.getChildAt(_idx + _mirrorIndex);
@@ -252,7 +254,7 @@
                      break;
 
                  default:
-                     _mirrorReverseText = brushType.font
+                     _mirrorReverseText = brushType.font;
              }
          }
 
@@ -285,7 +287,7 @@
              } else {
                  _targetCube.getChildAt(1).visible = false;
                  if (_self.mirrorMode) {
-                     _mirrorCube.getChildAt(1).visible = false
+                     _mirrorCube.getChildAt(1).visible = false;
                  }
              }
          }
@@ -302,7 +304,7 @@
 
          function getMirrorIdx(_idx, _reverse) {
 
-             var _index
+             var _index;
              if (_idx < 6) {
                  if (_reverse) {
                      _index = reverseMirror[_idx];
@@ -317,7 +319,7 @@
                      _index = mirror[_idx % 6];
                  }
              }
-             return _index
+             return _index;
          }
      }
 
@@ -335,7 +337,7 @@
          }
 
          if (typeof(_fn) == "function") {
-             _fn(getDataArray())
+             _fn(getDataArray());
          }
      }
 
@@ -352,21 +354,21 @@
                  brushType = {
                      bType: _b,
                      font: ""
-                 }
+                 };
                  break;
 
              case 'enabled':
                  brushType = {
                      bType: _b,
                      font: ""
-                 }
+                 };
                  break;
 
              default:
                  brushType = {
                      bType: 'enabled',
                      font: _b
-                 }
+                 };
          }
      }
 
@@ -375,7 +377,7 @@
              loadLimit,
              returnArr = [];
 
-         if (_self.displayMode == 0) {
+         if (_self.displayMode === 0) {
              loadLimit = 1;
          } else {
              loadLimit = 2;
@@ -385,8 +387,8 @@
 
              var _arr = [];
 
-             for (var j = 0; j < 6; j++) {
-                 _arr[j] = [];
+             for (var k = 0; k < 6; k++) {
+                 _arr[k] = [];
              }
 
              for (var j = 0; j < tableGroup[i].children.length; j++) {
@@ -396,7 +398,7 @@
                      _outSymbol = '-';
 
                  } else {
-                     if (tableGroup[i].getChildAt(j).blockContent != '') {
+                     if (tableGroup[i].getChildAt(j).blockContent !== '') {
                          _outSymbol = tableGroup[i].getChildAt(j).blockContent;
                      } else {
                          _outSymbol = '+';
@@ -407,11 +409,11 @@
 
              }
 
-             returnArr.push(_arr)
+             returnArr.push(_arr);
 
          }
 
-         return returnArr
+         return returnArr;
      }
 
      function changeDataRender(_data) {
@@ -421,7 +423,7 @@
 
      function loadTableData() {
 
-         var _tempTable = [table, table2]
+         var _tempTable = [table, table2];
          for (var i = 0; i < _self.tableData.length; i++) {
              transferAndRender(_self.tableData[i], _tempTable[i]);
          }
@@ -433,16 +435,16 @@
              _reData = [],
              colCounter = 0;
 
-         for (var i = 0; i < _data.length; i++) {
-             _reData[i] = [];
-             var _col = _data[i];
+         for (var ii = 0; ii < _data.length; ii++) {
+             _reData[ii] = [];
+             var _col = _data[ii];
 
-             for (var j = 0; j < _col.length; j++) {
-                 var _status = _col[j].match(_reg)
+             for (var jj = 0; jj < _col.length; jj++) {
+                 var _status = _col[jj].match(_reg);
                  if (_status) {
-                     _reData[i].push(_status[0].toUpperCase());
+                     _reData[ii].push(_status[0].toUpperCase());
                  } else {
-                     _reData[i].push("-");
+                     _reData[ii].push("-");
                  }
 
              }
@@ -451,7 +453,7 @@
          loopBreak:
 
              for (var i = 0; i < _reData.length; i++) {
-                 for (j = 0; j < _reData[i].length; j++) {
+                 for (var j = 0; j < _reData[i].length; j++) {
 
                      var _color,
                          _text,
@@ -512,7 +514,7 @@
              _life = 0;
 
          if (typeof(_array) == "object") {
-             _data = _array
+             _data = _array;
          } else {
              _data = getDataArray();
          }
@@ -534,7 +536,7 @@
          return {
              life: _life,
              system: _reSystem
-         }
+         };
 
      }
 

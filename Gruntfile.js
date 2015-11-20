@@ -15,7 +15,8 @@ module.exports = function(grunt) {
         // all of our configuration will go here
         jshint: {
             options: {
-                reporter: require('jshint-stylish') // use jshint-stylish to make our errors look and read good               
+              reporter: require('jshint-stylish'), // use jshint-stylish to make our errors look and read good               
+              eqnull:false
             },
 
             // when this task is run, lint the Gruntfile and all js files in src
@@ -35,8 +36,8 @@ module.exports = function(grunt) {
 
         watch: {          
             scripts: {
-                files: 'src/**/*.js',
-                tasks: ['jshint', 'uglify']
+                files: 'js/pixi_warjack_box.js',
+                tasks: ['buildlog','jshint', 'uglify']
             }
         }
 
